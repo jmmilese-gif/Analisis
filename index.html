@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis de Inversiones</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0f14;--bg2:#141820;--bg3:#1a1f2a;--accent:#3b82f6;--accent2:#60a5fa;--green:#22c55e;--text:#e8eaf0;--text2:#9ca3b4;--text3:#5a6175;--border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);--r:12px;--font:'DM Sans',sans-serif;--fd:'Playfair Display',serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+.hero{padding:4rem 2rem 3rem;text-align:center;background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%);border-bottom:1px solid var(--border)}
+.hero h1{font-family:var(--fd);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;margin-bottom:.5rem;background:linear-gradient(135deg,#fff,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text2);font-size:1rem;max-width:500px;margin:0 auto}
+.container{max-width:900px;margin:0 auto;padding:2rem 1.5rem}
+.section-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--accent2);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:3rem}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;transition:all .25s;cursor:pointer;text-decoration:none;color:inherit;display:block;position:relative;overflow:hidden}
+.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 30px rgba(59,130,246,.08)}
+.card::after{content:'→';position:absolute;top:1.5rem;right:1.5rem;font-size:1.2rem;color:var(--text3);transition:all .25s}
+.card:hover::after{color:var(--accent);transform:translateX(4px)}
+.card-badge{display:inline-block;font-size:.6rem;font-weight:600;padding:3px 10px;border-radius:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem}
+.badge-active{background:rgba(34,197,94,.12);color:var(--green)}
+.badge-soon{background:rgba(245,158,11,.12);color:#f59e0b}
+.card h3{font-size:1rem;font-weight:600;margin-bottom:.4rem;padding-right:2rem}
+.card p{font-size:.8rem;color:var(--text2);line-height:1.5}
+.card .meta{margin-top:.75rem;font-size:.7rem;color:var(--text3);display:flex;gap:1rem}
+.footer{text-align:center;padding:2rem;font-size:.72rem;color:var(--text3);border-top:1px solid var(--border)}
+.empty-card{border-style:dashed;border-color:var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;cursor:default}
+.empty-card:hover{transform:none;box-shadow:none;border-color:var(--border2)}
+.empty-card::after{display:none}
+.empty-card .plus{width:40px;height:40px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--text3);margin-bottom:.5rem}
+.empty-card p{text-align:center}
+</style>
+</head>
+<body>
+
+<div class="hero">
+<h1>Análisis de inversiones</h1>
+<p>Simuladores financieros interactivos para evaluar proyectos de inversión</p>
+</div>
+
+<div class="container">
+
+<div class="section-label">Proyectos activos</div>
+<div class="grid">
+
+<a href="camion-combustibles.html" class="card">
+<span class="card-badge badge-active">Activo</span>
+<h3>Camión de combustibles</h3>
+<p>Análisis de inversión para transporte de combustibles. Incluye VAN, TIR, MIRR, ROI, DSCR, sensibilidad tornado y simulación Monte Carlo.</p>
+<div class="meta">
+<span>Horizonte: variable</span>
+<span>Inicio op: Jun 2026</span>
+</div>
+</a>
+
+<!-- 
+  PARA AGREGAR UN NUEVO PROYECTO:
+  1. Copiá el bloque <a> de arriba
+  2. Cambiá el href al nombre de tu archivo .html
+  3. Editá el título, descripción y meta
+  4. Subí el nuevo .html a la misma carpeta
+-->
+
+<div class="card empty-card">
+<div class="plus">+</div>
+<p style="font-size:.78rem;color:var(--text3)">Próximo proyecto<br><span style="font-size:.7rem">Agregá otro .html a la carpeta</span></p>
+</div>
+
+</div>
+
+</div>
+
+<div class="footer">
+Simuladores financieros — Todos los cálculos son estimativos y no constituyen asesoramiento financiero profesional.
+</div>
+
+</body>
+</html>

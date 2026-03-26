@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis de Inversión — Camión Combustibles</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#0c0f14;--bg2:#141820;--bg3:#1a1f2a;--bg4:#222836;--accent:#3b82f6;--accent2:#60a5fa;--green:#22c55e;--gbg:rgba(34,197,94,.08);--red:#ef4444;--rbg:rgba(239,68,68,.08);--amber:#f59e0b;--abg:rgba(245,158,11,.08);--text:#e8eaf0;--text2:#9ca3b4;--text3:#5a6175;--border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);--r:12px;--rs:8px;--font:'DM Sans',sans-serif;--fd:'Playfair Display',serif}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+.header{padding:2.5rem 2rem 2rem;background:linear-gradient(135deg,var(--bg2),var(--bg));border-bottom:1px solid var(--border)}
+.header-inner{max-width:1440px;margin:0 auto}
+.header h1{font-family:var(--fd);font-size:clamp(1.4rem,3vw,2.1rem);font-weight:700;letter-spacing:-.02em;margin-bottom:.25rem;background:linear-gradient(135deg,#fff,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header p{color:var(--text2);font-size:.82rem}
+.hb{display:flex;gap:8px;margin-top:.8rem;flex-wrap:wrap}
+.hb span{font-size:.65rem;padding:3px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)}
+.container{max-width:1440px;margin:0 auto;padding:1.5rem}
+.gm{display:grid;grid-template-columns:345px 1fr;gap:1.5rem}
+.sidebar{position:sticky;top:1rem;max-height:calc(100vh - 2rem);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bg4) transparent}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem;margin-bottom:.8rem}
+.pt{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent2);margin-bottom:.9rem;display:flex;align-items:center;gap:6px}
+.pt::before{content:'';width:3px;height:13px;background:var(--accent);border-radius:2px}
+.f{margin-bottom:.85rem}.f:last-child{margin-bottom:0}
+.f label{display:flex;justify-content:space-between;align-items:baseline;font-size:.72rem;color:var(--text2);margin-bottom:3px}
+.f .v{font-weight:600;color:var(--text);font-size:.76rem;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;appearance:none;background:var(--bg4);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid var(--bg2);cursor:pointer;transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15)}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:2px solid var(--bg2);cursor:pointer}
+.mc{min-width:0}
+.kr{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px;margin-bottom:1.2rem}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.85rem .95rem;position:relative;overflow:hidden;transition:border-color .2s;cursor:default}
+.kpi:hover{border-color:var(--border2)}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.good::after{background:var(--green)}.kpi.bad::after{background:var(--red)}.kpi.mid::after{background:var(--amber)}
+.kl{font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:4px;font-weight:500}
+.kv{font-size:1.25rem;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ks{font-size:.66rem;color:var(--text3);margin-top:2px;font-variant-numeric:tabular-nums}
+.pos{color:var(--green)}.neg{color:var(--red)}.mid{color:var(--amber)}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.2rem;overflow-x:auto}
+.tab{padding:9px 14px;font-size:.73rem;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.tab:hover{color:var(--text2)}.tab.on{color:var(--accent2);border-bottom-color:var(--accent)}
+.tp{display:none}.tp.on{display:block;animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.tw{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.tbl{width:100%;border-collapse:collapse;font-size:.74rem;font-variant-numeric:tabular-nums}
+.tbl th{padding:8px 10px;text-align:left;font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);background:var(--bg3);border-bottom:1px solid var(--border)}
+.tbl th:not(:first-child){text-align:right}
+.tbl td{padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text2)}
+.tbl td:not(:first-child){text-align:right;font-weight:500;color:var(--text)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.tot td{font-weight:700;background:var(--bg3);color:var(--text)}
+.tbl tr:hover td{background:rgba(255,255,255,.015)}
+.stbl{max-height:500px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bg4) transparent}
+.cc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.15rem;margin-bottom:.9rem}
+.ct{font-size:.7rem;font-weight:600;color:var(--text2);margin-bottom:.7rem;text-transform:uppercase;letter-spacing:.04em}
+.cw{position:relative;width:100%}
+.alert{padding:.9rem 1.15rem;border-radius:var(--r);font-size:.76rem;line-height:1.6;margin-bottom:1rem;border-left:3px solid}
+.ag{background:var(--gbg);border-color:var(--green);color:var(--green)}
+.ar{background:var(--rbg);border-color:var(--red);color:var(--red)}
+.aw{background:var(--abg);border-color:var(--amber);color:var(--amber)}
+.ph{display:inline-block;font-size:.55rem;font-weight:600;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em}
+.ph-p{background:rgba(139,92,246,.15);color:#a78bfa}
+.ph-d{background:rgba(245,158,11,.15);color:var(--amber)}
+.ph-f{background:rgba(34,197,94,.15);color:var(--green)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.sbtns{display:flex;gap:5px;flex-wrap:wrap}
+.sb{padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;font-size:.68rem;font-family:var(--font);transition:all .2s}
+.sb:hover{background:var(--bg4)}
+.sb-g{border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.08);color:var(--green)}
+.sb-r{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.08);color:var(--red)}
+.sb-a{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.08);color:var(--amber)}
+.hz{text-align:center;margin:7px 0 0;font-size:1.4rem;font-weight:700;color:var(--text)}.hz small{font-size:.75rem;font-weight:400;color:var(--text2)}
+.hzp{border-color:var(--accent)!important;background:linear-gradient(135deg,var(--bg2),var(--bg3))!important}
+.hzf{background:var(--bg3);border:1px solid var(--accent);border-radius:var(--rs);padding:9px 11px}
+.hzf label{color:var(--accent2)!important;font-weight:600}
+.info-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.15rem;margin-bottom:.75rem}
+.info-card h3{font-size:.82rem;font-weight:600;color:var(--accent2);margin-bottom:.4rem}
+.info-card p{font-size:.75rem;color:var(--text2);line-height:1.65}
+.info-card .formula{font-family:monospace;font-size:.72rem;background:var(--bg3);padding:4px 10px;border-radius:var(--rs);color:var(--amber);display:inline-block;margin:4px 0}
+.timeline-note{font-size:.7rem;color:var(--text3);padding:8px 12px;background:var(--bg3);border-radius:var(--rs);margin-bottom:.8rem;border-left:3px solid var(--accent)}
+@media(max-width:900px){.gm{grid-template-columns:1fr}.sidebar{position:static;max-height:none}.two-col{grid-template-columns:1fr}}
+@media(max-width:600px){.kr{grid-template-columns:repeat(2,1fr)}.container{padding:.8rem}}
+</style>
+</head>
+<body>
+
+<div class="header">
+<div class="header-inner">
+<h1>Análisis de inversión — Camión de combustibles</h1>
+<p>Simulador financiero · Operación desde junio 2026 · Inflación real sobre costos e ingresos</p>
+<div class="hb">
+<span>Oct 25 → May 26: solo cuotas</span>
+<span>Jun 26+: operación activa</span>
+<span>Inflación aplicada a cada línea</span>
+</div>
+</div>
+</div>
+
+<div class="container">
+<div class="gm">
+
+<div class="sidebar">
+
+<div class="panel hzp">
+<div class="pt" style="color:#fff">Horizonte del proyecto</div>
+<div class="hzf"><div class="f" style="margin:0"><label>Meses totales <span class="v" id="meses-v"></span></label><input type="range" min="29" max="120" step="1" value="60" id="meses"></div></div>
+<div class="hz" id="meses-d"></div>
+<div class="timeline-note" style="margin-top:8px;border-left-color:var(--amber)">Meses 1-8: solo pago de cuotas (sin operación)<br>Mes 9 en adelante (Jun 2026): inicia operación</div>
+</div>
+
+<div class="panel">
+<div class="pt">Ingresos operativos (desde Jun 2026)</div>
+<div class="f"><label>Litros transportados / mes <span class="v" id="litros-v"></span></label><input type="range" min="50000" max="800000" step="10000" value="350000" id="litros"></div>
+<div class="f"><label>Precio venta por litro <span class="v" id="pventa-v"></span></label><input type="range" min="20" max="250" step="5" value="80" id="pventa"></div>
+</div>
+
+<div class="panel">
+<div class="pt">Costos operativos (desde Jun 2026)</div>
+<div class="f"><label>Sueldo chofer / mes <span class="v" id="sueldo-v"></span></label><input type="range" min="500000" max="8000000" step="100000" value="2000000" id="sueldo"></div>
+<div class="f"><label>Viajes por mes <span class="v" id="viajes-v"></span></label><input type="range" min="1" max="20" step="0.5" value="7" id="viajes"></div>
+<div class="f"><label>Km por vuelta <span class="v" id="kmvuelta-v"></span></label><input type="range" min="200" max="4000" step="50" value="1500" id="kmvuelta"></div>
+<div class="f"><label>Consumo gasoil (L/km) <span class="v" id="consumo-v"></span></label><input type="range" min="0.15" max="0.7" step="0.01" value="0.32" id="consumo"></div>
+<div class="f"><label>Precio gasoil (ARS/L) <span class="v" id="gasoil-v"></span></label><input type="range" min="500" max="4000" step="50" value="1500" id="gasoil"></div>
+<div class="f"><label>Costo cubierta x km <span class="v" id="cubierta-v"></span></label><input type="range" min="10" max="300" step="5" value="80" id="cubierta"></div>
+<div class="f"><label>Gastos varios / mes <span class="v" id="gvarios-v"></span></label><input type="range" min="250000" max="12000000" step="250000" value="3000000" id="gvarios"></div>
+</div>
+
+<div class="panel">
+<div class="pt">Financiamiento y valuación</div>
+<div class="f"><label>Tasa descuento anual (%) <span class="v" id="tasa-v"></span></label><input type="range" min="1" max="120" step="1" value="40" id="tasa"></div>
+<div class="f"><label>Tipo de cambio USD <span class="v" id="tc-v"></span></label><input type="range" min="500" max="3000" step="10" value="1450" id="tc"></div>
+<div class="f"><label>Valor residual camión (USD) <span class="v" id="residual-v"></span></label><input type="range" min="0" max="250000" step="5000" value="80000" id="residual"></div>
+<div class="f"><label>Mant. extra post-garantía (%) <span class="v" id="mant-v"></span></label><input type="range" min="0" max="40" step="1" value="10" id="mant"></div>
+<div class="f"><label>Tasa impositiva (%) <span class="v" id="impuesto-v"></span></label><input type="range" min="0" max="50" step="1" value="0" id="impuesto"></div>
+</div>
+
+<div class="panel">
+<div class="pt" style="color:var(--amber)">Inflación mensual (%)</div>
+<div class="f"><label>Inflación aplicada a ingresos y costos <span class="v" id="inflacion-v"></span></label><input type="range" min="0" max="15" step="0.5" value="3" id="inflacion"></div>
+<div style="font-size:.68rem;color:var(--text3);margin-top:4px;line-height:1.5">La inflación ajusta mes a mes: sueldo, gasoil, cubiertas, gastos varios, precio de venta por litro. Los valores base son a Jun 2026.</div>
+</div>
+
+<div class="panel" style="background:var(--bg3);border-color:var(--border2)">
+<div class="pt" style="color:var(--amber)">Escenarios</div>
+<div class="sbtns">
+<button class="sb" onclick="setS('base')">Base</button>
+<button class="sb sb-g" onclick="setS('opt')">Optimista</button>
+<button class="sb sb-r" onclick="setS('pes')">Pesimista</button>
+<button class="sb sb-a" onclick="setS('inf')">Alta inflación</button>
+<button class="sb" onclick="setS('largo')">Largo (8a)</button>
+</div>
+</div>
+</div>
+
+<div class="mc">
+<div id="alert-main"></div>
+<div class="kr" id="kpi-main"></div>
+
+<div class="tabs">
+<div class="tab on" data-t="t-dash">Dashboard</div>
+<div class="tab" data-t="t-eerr">Resultados</div>
+<div class="tab" data-t="t-flujo">Flujo de fondos</div>
+<div class="tab" data-t="t-sensi">Sensibilidad</div>
+<div class="tab" data-t="t-monte">Monte Carlo</div>
+<div class="tab" data-t="t-extra">Más gráficos</div>
+<div class="tab" data-t="t-info">¿Qué significa cada indicador?</div>
+</div>
+
+<div class="tp on" id="t-dash">
+<div class="timeline-note">Meses 1-8 (Oct 25 — May 26): solo erogaciones por cuotas del camión, sin ingresos ni costos operativos. La operación arranca en el mes 9 (Jun 2026).</div>
+<div class="two-col" style="margin-bottom:.9rem">
+<div class="cc"><div class="ct">Flujo acumulado</div><div class="cw" style="height:280px"><canvas id="cCF"></canvas></div></div>
+<div class="cc"><div class="ct">Composición de costos (valores base)</div><div class="cw" style="height:280px"><canvas id="cCost"></canvas></div></div>
+</div>
+<div class="cc"><div class="ct">Flujo neto mensual</div><div class="cw" style="height:220px"><canvas id="cBars"></canvas></div></div>
+</div>
+
+<div class="tp" id="t-eerr">
+<div class="two-col">
+<div class="cc" style="padding:0;overflow:hidden"><div style="padding:.9rem 1.1rem 0"><div class="ct">Resultado mensual (valores base Jun 2026)</div></div><table class="tbl" id="tbl-eerr"></table></div>
+<div class="cc" style="padding:0;overflow:hidden"><div style="padding:.9rem 1.1rem 0"><div class="ct">Ratios e indicadores</div></div><table class="tbl" id="tbl-ratios"></table></div>
+</div>
+</div>
+
+<div class="tp" id="t-flujo">
+<div class="tw"><div class="stbl"><table class="tbl" id="tbl-flujo"></table></div></div>
+</div>
+
+<div class="tp" id="t-sensi">
+<div class="cc"><div class="ct">Tornado — Impacto en VAN (±30%)</div><div class="cw" style="height:400px"><canvas id="cSensi"></canvas></div></div>
+</div>
+
+<div class="tp" id="t-monte">
+<div class="cc"><div class="ct">Monte Carlo — 1.000 simulaciones del VAN</div><div class="cw" style="height:280px"><canvas id="cMonte"></canvas></div>
+<div style="display:flex;gap:1.5rem;margin-top:12px;font-size:.73rem;color:var(--text2);flex-wrap:wrap" id="mc-stats"></div></div>
+</div>
+
+<div class="tp" id="t-extra">
+<div class="two-col" style="margin-bottom:.9rem">
+<div class="cc"><div class="ct">Ingresos vs costos por fase</div><div class="cw" style="height:260px"><canvas id="cPhase"></canvas></div></div>
+<div class="cc"><div class="ct">Payback descontado acumulado</div><div class="cw" style="height:260px"><canvas id="cPBD"></canvas></div></div>
+</div>
+<div class="cc"><div class="ct">ROI acumulado en el tiempo</div><div class="cw" style="height:240px"><canvas id="cROI"></canvas></div></div>
+</div>
+
+<div class="tp" id="t-info">
+
+<div class="info-card">
+<h3>VAN — Valor Actual Neto</h3>
+<p>Es la suma de todos los flujos futuros del proyecto (ingresos menos egresos de cada mes) traídos a valor presente usando la tasa de descuento. Si el VAN es positivo, el proyecto genera más riqueza que invertir esa misma plata a la tasa exigida. Si es negativo, destruye valor.</p>
+<div class="formula">VAN = Σ (Flujo mes_i) / (1 + tasa_mensual)^i</div>
+<p><strong>Cómo interpretarlo:</strong> VAN > 0 → el proyecto conviene. Cuanto más alto, mejor. Un VAN de $100M significa que, después de recuperar toda la inversión y pagar el costo de oportunidad del dinero, te quedan $100M extra en pesos de hoy.</p>
+</div>
+
+<div class="info-card">
+<h3>TIR — Tasa Interna de Retorno</h3>
+<p>Es la tasa de descuento a la cual el VAN se hace exactamente cero. Dicho de otro modo: es la rentabilidad implícita del proyecto. Si la TIR supera tu tasa de descuento (tu costo de oportunidad), el proyecto conviene.</p>
+<div class="formula">TIR: tasa r tal que Σ Flujo_i / (1+r)^i = 0</div>
+<p><strong>Cómo interpretarlo:</strong> TIR > tasa exigida → proyecto aceptable. Si tu tasa es 40% y la TIR da 55%, hay 15 puntos de margen. Pero ojo: la TIR asume que todos los flujos intermedios se reinvierten a esa misma tasa, lo cual no siempre es realista. Por eso también mostramos la MIRR.</p>
+</div>
+
+<div class="info-card">
+<h3>MIRR — Tasa Interna de Retorno Modificada</h3>
+<p>Es una versión corregida de la TIR que asume que los flujos positivos se reinvierten a la tasa de descuento (más realista) y que los flujos negativos se financian a esa misma tasa. Evita los problemas que tiene la TIR cuando hay flujos irregulares.</p>
+<p><strong>Cómo interpretarlo:</strong> Usualmente da menos que la TIR. Si la MIRR todavía supera tu tasa exigida, es una señal muy sólida.</p>
+</div>
+
+<div class="info-card">
+<h3>ROI — Retorno sobre la Inversión</h3>
+<p>Es la ganancia neta total del proyecto dividida por la inversión total, expresada como porcentaje. El ROI anualizado divide ese porcentaje por la cantidad de años del horizonte para que sea comparable con otras inversiones.</p>
+<div class="formula">ROI = (Ganancia total / Inversión total) × 100</div>
+<p><strong>Cómo interpretarlo:</strong> Un ROI del 80% en 5 años significa que por cada peso invertido, recuperás $1,80. El anualizado (~16%) te dice cuánto "rinde" por año para comparar con un plazo fijo u otra inversión.</p>
+</div>
+
+<div class="info-card">
+<h3>Payback — Período de recupero</h3>
+<p><strong>Simple:</strong> cuántos meses tardás en recuperar la inversión sumando los flujos tal como vienen. <strong>Descontado:</strong> lo mismo pero trayendo cada flujo a valor presente — más conservador y realista porque reconoce que un peso dentro de 3 años vale menos que un peso hoy.</p>
+<p><strong>Cómo interpretarlo:</strong> Mientras más corto, mejor. Si el payback es menor que el horizonte del proyecto, recuperás la inversión. Si es menor que los 29 meses de deuda, el camión se paga solo con su propia operación mientras pagás las cuotas.</p>
+</div>
+
+<div class="info-card">
+<h3>DSCR — Debt Service Coverage Ratio</h3>
+<p>Es el resultado operativo mensual dividido por la cuota promedio de deuda. Mide cuántas veces tu flujo operativo puede cubrir las cuotas.</p>
+<div class="formula">DSCR = Resultado operativo / Cuota promedio</div>
+<p><strong>Cómo interpretarlo:</strong> DSCR > 1.2x → cobertura saludable, hay margen. DSCR entre 1.0x y 1.2x → ajustado, cualquier imprevisto te complica. DSCR < 1.0x → el flujo no alcanza para las cuotas, riesgo de default. Nota: en este proyecto los primeros 8 meses el DSCR es 0 porque no hay ingresos operativos.</p>
+</div>
+
+<div class="info-card">
+<h3>Índice Beneficio/Costo (B/C)</h3>
+<p>Es el cociente entre el valor presente de todos los beneficios y el valor presente de todos los costos. Un B/C mayor a 1 indica que los beneficios superan los costos.</p>
+<p><strong>Cómo interpretarlo:</strong> B/C = 1.3 significa que por cada peso de costo, generás $1,30 en beneficios. Es otra forma de confirmar lo que dice el VAN.</p>
+</div>
+
+<div class="info-card">
+<h3>Punto de equilibrio y margen de seguridad</h3>
+<p>El punto de equilibrio en litros es el volumen mínimo de combustible que tenés que transportar por mes para no perder plata (cubriendo costos operativos + cuota promedio). El margen de seguridad muestra cuánto puede caer tu volumen actual antes de llegar a ese punto.</p>
+<p><strong>Cómo interpretarlo:</strong> Un margen de seguridad del 30% te dice que podés perder un tercio de tus viajes y todavía no perdés plata. Menos del 10% es peligroso.</p>
+</div>
+
+<div class="info-card">
+<h3>Inflación en este modelo</h3>
+<p>La inflación mensual se aplica acumulativamente sobre cada línea de ingreso y costo a partir del mes de inicio de operaciones (Jun 2026). Los valores que ingresás en los sliders son valores base a Jun 2026. Cada mes siguiente se multiplica por (1 + inflación)^meses_transcurridos. Esto afecta sueldo, gasoil, cubiertas, gastos varios y precio de venta por litro por igual. Las cuotas del camión NO se ajustan por inflación (son montos fijos en pesos).</p>
+<p><strong>Efecto práctico:</strong> con inflación positiva, los costos e ingresos crecen pero las cuotas fijas se "licuan" en términos reales, mejorando el flujo con el tiempo. Por eso en Argentina es crucial modelar inflación.</p>
+</div>
+
+</div>
+
+</div></div></div>
+
+<script>
+const E29=[17525048,32515048,17525048,17525048,25286648,22170964,64720473,30962955,30887487,30812019,30736552,30661084,30585616,12985101,12909633,12834165,12758697,12683230,12607762,12532294,12456826,12381359,12305891,12230423,3294005,3218538,3143070,3067602,2992134];
+const TINV=E29.reduce((a,b)=>a+b,0);
+const DM=29;
+const OP_START=8; // operations start at month index 8 (Jun 2026), months 0-7 are pre-operational
+const MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+function bm(n){const r=[];let mo=9,yr=25;for(let i=0;i<n;i++){r.push(MN[mo%12]+String(yr+Math.floor(mo/12)).slice(-2));mo++}return r}
+const f0=n=>Math.round(n).toLocaleString('es-AR');
+const fD=(n,d)=>n.toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fM=n=>{const a=Math.abs(n),s=n<0?'-':'';if(a>=1e9)return s+'$'+fD(a/1e9,1)+'B';if(a>=1e6)return s+'$'+fD(a/1e6,1)+'M';if(a>=1e3)return s+'$'+f0(Math.round(a/1e3))+'K';return s+'$'+f0(a)};
+const fP=(n,d)=>fD(n,d===undefined?1:d)+'%';
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.tp').forEach(x=>x.classList.remove('on'));t.classList.add('on');document.getElementById(t.dataset.t).classList.add('on')}));
+
+const IDS=['meses','sueldo','viajes','kmvuelta','consumo','gasoil','cubierta','litros','pventa','gvarios','tc','tasa','residual','mant','impuesto','inflacion'];
+const el={};IDS.forEach(id=>el[id]=document.getElementById(id));
+const SC={base:{meses:60,sueldo:2e6,viajes:7,kmvuelta:1500,consumo:.32,gasoil:1500,cubierta:80,litros:350000,pventa:80,gvarios:3e6,tc:1450,tasa:40,residual:80000,mant:10,impuesto:0,inflacion:3},opt:{meses:72,sueldo:2e6,viajes:10,kmvuelta:1500,consumo:.30,gasoil:1400,cubierta:70,litros:500000,pventa:90,gvarios:2.5e6,tc:1450,tasa:35,residual:100000,mant:8,impuesto:0,inflacion:2},pes:{meses:60,sueldo:3e6,viajes:5,kmvuelta:1500,consumo:.35,gasoil:2000,cubierta:100,litros:200000,pventa:70,gvarios:4e6,tc:1450,tasa:50,residual:50000,mant:20,impuesto:0,inflacion:5},inf:{meses:60,sueldo:2e6,viajes:7,kmvuelta:1500,consumo:.32,gasoil:1500,cubierta:80,litros:350000,pventa:80,gvarios:3e6,tc:1450,tasa:70,residual:80000,mant:10,impuesto:0,inflacion:8},largo:{meses:96,sueldo:2e6,viajes:7,kmvuelta:1500,consumo:.32,gasoil:1500,cubierta:80,litros:350000,pventa:80,gvarios:3e6,tc:1450,tasa:40,residual:50000,mant:15,impuesto:0,inflacion:3}};
+window.setS=function(s){const d=SC[s];if(!d)return;IDS.forEach(id=>{if(d[id]!==undefined)el[id].value=d[id]});upd()};
+
+function calcTIR(fl,g){let r=g||.05;for(let j=0;j<500;j++){let n=0,d=0;for(let i=0;i<fl.length;i++){const p=Math.pow(1+r,i);n+=fl[i]/p;d-=i*fl[i]/Math.pow(1+r,i+1)}if(Math.abs(d)<1e-12)break;const nr=r-n/d;if(Math.abs(nr-r)<1e-10){r=nr;break}r=nr;if(r<-.99)r=-.5;if(r>50)r=10}return r}
+function calcVAN(fl,tm){let v=0;for(let i=0;i<fl.length;i++)v+=fl[i]/Math.pow(1+tm,i);return v}
+function calcMIRR(fl,fr,rr,n){let pN=0,fP=0;for(let i=0;i<fl.length;i++){if(fl[i]<0)pN+=fl[i]/Math.pow(1+fr,i);else fP+=fl[i]*Math.pow(1+rr,n-1-i)}if(pN===0)return NaN;return Math.pow(fP/(-pN),1/(n-1))-1}
+
+function mkFlows(v,N){
+  const km=Math.round(v.viajes*v.kmvuelta);
+  const cG0=Math.round(km*v.consumo*v.gasoil);
+  const cC0=Math.round(km*v.cubierta);
+  const cb0=cG0+cC0+v.sueldo+v.gvarios;
+  const ing0=Math.round(v.litros*v.pventa);
+  const me0=Math.round(cb0*v.mant/100);
+  const iM=v.inflacion/100;
+  const fl=[];
+  const details=[];
+  for(let i=0;i<N;i++){
+    const isOp=i>=OP_START;
+    const opMonths=isOp?i-OP_START:0;
+    const inf=Math.pow(1+iM,opMonths);
+    let ingI=0,costI=0,mantI=0;
+    if(isOp){
+      ingI=Math.round(ing0*inf);
+      const postDebt=i>=DM;
+      mantI=postDebt?Math.round(me0*inf):0;
+      costI=Math.round(cb0*inf)+mantI;
+    }
+    const rPre=ingI-costI;
+    const tx=v.impuesto>0&&rPre>0?Math.round(rPre*v.impuesto/100):0;
+    const rNet=rPre-tx;
+    const cuota=i<DM?E29[i]:0;
+    let f=rNet-cuota;
+    if(i===N-1)f+=v.residual*v.tc;
+    fl.push(f);
+    details.push({ingI,costI,mantI,rNet,cuota,inf});
+  }
+  return{fl,km,cG0,cC0,cb0,ing0,me0,details}
+}
+
+const tc2='rgba(255,255,255,.4)',gc2='rgba(255,255,255,.04)';
+function mO(yf){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tc2,maxRotation:45,font:{size:8},autoSkip:true,maxTicksLimit:14},grid:{display:false}},y:{ticks:{color:tc2,callback:yf||function(v){return fM(v)}},grid:{color:gc2}}}}}
+
+let cCF,cCo,cBa,cSe,cMo,cPh,cPB,cRO;
+function initC(){
+  cCF=new Chart(document.getElementById('cCF'),{type:'line',data:{labels:[],datasets:[{data:[],borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.06)',fill:true,tension:.3,pointRadius:0,borderWidth:2},{data:[],borderColor:'rgba(255,255,255,.08)',borderDash:[4,4],pointRadius:0,borderWidth:1}]},options:mO()});
+  cCo=new Chart(document.getElementById('cCost'),{type:'doughnut',data:{labels:[],datasets:[{data:[],backgroundColor:['#ef4444','#8b5cf6','#22c55e','#6b7280','#f59e0b'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'bottom',labels:{color:tc2,padding:10,font:{size:11}}}}}});
+  cBa=new Chart(document.getElementById('cBars'),{type:'bar',data:{labels:[],datasets:[{data:[],backgroundColor:[],borderRadius:2,borderSkipped:false}]},options:mO()});
+  cSe=new Chart(document.getElementById('cSensi'),{type:'bar',data:{labels:[],datasets:[{label:'-30%',data:[],backgroundColor:[],borderRadius:3,borderWidth:0},{label:'+30%',data:[],backgroundColor:[],borderRadius:3,borderWidth:0}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tc2,callback:v=>fM(v)},grid:{color:gc2}},y:{ticks:{color:tc2,font:{size:11}},grid:{display:false}}}}});
+  cMo=new Chart(document.getElementById('cMonte'),{type:'bar',data:{labels:[],datasets:[{data:[],backgroundColor:[],borderRadius:2,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tc2,font:{size:8}},grid:{display:false}},y:{ticks:{color:tc2},grid:{color:gc2}}}}});
+  cPh=new Chart(document.getElementById('cPhase'),{type:'bar',data:{labels:[],datasets:[{label:'Ingresos',data:[],backgroundColor:'#22c55e',borderRadius:4},{label:'Costos op.',data:[],backgroundColor:'#ef4444',borderRadius:4},{label:'Cuotas',data:[],backgroundColor:'#8b5cf6',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:tc2,font:{size:11},padding:10}}},scales:{x:{ticks:{color:tc2},grid:{display:false}},y:{ticks:{color:tc2,callback:v=>fM(v)},grid:{color:gc2}}}}});
+  cPB=new Chart(document.getElementById('cPBD'),{type:'line',data:{labels:[],datasets:[{data:[],borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.06)',fill:true,tension:.3,pointRadius:0,borderWidth:2},{data:[],borderColor:'rgba(255,255,255,.08)',borderDash:[4,4],pointRadius:0,borderWidth:1}]},options:mO()});
+  cRO=new Chart(document.getElementById('cROI'),{type:'line',data:{labels:[],datasets:[{data:[],borderColor:'#22c55e',tension:.3,pointRadius:0,borderWidth:2,fill:false}]},options:mO(v=>fP(v,0))});
+}
+initC();
+
+function upd(){
+  const v={};IDS.forEach(id=>v[id]=+el[id].value);
+  const N=v.meses,mos=bm(N);
+  const mOp=Math.max(0,N-OP_START);
+  const mFree=Math.max(0,N-DM);
+
+  document.getElementById('meses-v').textContent=N;
+  document.getElementById('meses-d').innerHTML=N+' meses <small>('+fD(N/12,1)+' años)</small>';
+  document.getElementById('sueldo-v').textContent='$'+f0(v.sueldo);
+  document.getElementById('viajes-v').textContent=fD(v.viajes,1);
+  document.getElementById('kmvuelta-v').textContent=f0(v.kmvuelta)+' km';
+  document.getElementById('consumo-v').textContent=fD(v.consumo,2);
+  document.getElementById('gasoil-v').textContent='$'+f0(v.gasoil);
+  document.getElementById('cubierta-v').textContent='$'+f0(v.cubierta);
+  document.getElementById('litros-v').textContent=f0(v.litros)+' L';
+  document.getElementById('pventa-v').textContent='$'+f0(v.pventa);
+  document.getElementById('gvarios-v').textContent='$'+f0(v.gvarios);
+  document.getElementById('tc-v').textContent='$'+f0(v.tc);
+  document.getElementById('tasa-v').textContent=v.tasa+'%';
+  document.getElementById('residual-v').textContent='USD '+f0(v.residual);
+  document.getElementById('mant-v').textContent=v.mant+'%';
+  document.getElementById('impuesto-v').textContent=v.impuesto+'%';
+  document.getElementById('inflacion-v').textContent=fD(v.inflacion,1)+'%';
+
+  const{fl,km,cG0,cC0,cb0,ing0,me0,details}=mkFlows(v,N);
+  const r1=ing0-cb0;
+  const tx1=v.impuesto>0&&r1>0?Math.round(r1*v.impuesto/100):0;
+  const r1n=r1-tx1;
+  const r2p=ing0-cb0-me0;
+  const tx2=v.impuesto>0&&r2p>0?Math.round(r2p*v.impuesto/100):0;
+  const r2n=r2p-tx2;
+  const mar=ing0>0?r1n/ing0*100:0;
+
+  const tm=Math.pow(1+v.tasa/100,1/12)-1;
+  const VAN=calcVAN(fl,tm);
+  const tirM=calcTIR(fl,.03),tirA=Math.pow(1+tirM,12)-1;
+  const mirrM=calcMIRR(fl,tm,tm,N),mirrA=isFinite(mirrM)?Math.pow(1+mirrM,12)-1:NaN;
+  const pb=(()=>{let a=0;for(let i=0;i<N;i++){a+=fl[i];if(a>=0)return i+1}return Infinity})();
+  const pbD=(()=>{let a=0;for(let i=0;i<N;i++){a+=fl[i]/Math.pow(1+tm,i);if(a>=0)return i+1}return Infinity})();
+  const gT=fl.reduce((a,b)=>a+b,0);
+  const roiT=gT/TINV*100,roiA=roiT/(N/12);
+  const ibc=TINV>0?(gT+TINV)/TINV:0;
+  const cP=TINV/DM;
+  // DSCR only meaningful when operating (from month 9 onward with debt still running = months 8..28)
+  const opDebtMonths=Math.max(0,DM-OP_START); // 21 months of operating with debt
+  const dscr=r1n>0?r1n/cP:0;
+  const cMax=Math.max(...E29),dscrMin=r1n>0?r1n/cMax:0;
+  const peqL=v.pventa>0?(cb0+cP)/v.pventa:Infinity;
+  const peqLP=v.pventa>0?(cb0+me0)/v.pventa:Infinity;
+  const mSeg=v.litros>0?(v.litros-peqL)/v.litros*100:0;
+
+  const kc=(val,t1,t2,inv)=>{if(inv)return val<=t1?'good':val<=t2?'mid':'bad';return val>=t1?'good':val>=t2?'mid':'bad'};
+  document.getElementById('kpi-main').innerHTML=`
+    <div class="kpi ${kc(VAN,0,-1e6)}"><div class="kl">VAN (${N}m)</div><div class="kv ${VAN>=0?'pos':'neg'}">${fM(VAN)}</div><div class="ks">USD ${f0(Math.round(VAN/v.tc))}</div></div>
+    <div class="kpi ${kc(tirA*100,v.tasa,v.tasa*.8)}"><div class="kl">TIR anual</div><div class="kv ${tirA*100>v.tasa?'pos':'neg'}">${isFinite(tirA)?fP(tirA*100):'N/A'}</div><div class="ks">vs tasa ${v.tasa}%</div></div>
+    <div class="kpi"><div class="kl">MIRR anual</div><div class="kv">${isFinite(mirrA)?fP(mirrA*100):'N/A'}</div><div class="ks">Reinv. ${v.tasa}%</div></div>
+    <div class="kpi ${kc(roiA,20,5)}"><div class="kl">ROI anualizado</div><div class="kv ${roiA>0?'pos':'neg'}">${fP(roiA)}</div><div class="ks">Total: ${fP(roiT)}</div></div>
+    <div class="kpi ${kc(pb,DM,N*.7,true)}"><div class="kl">Payback</div><div class="kv">${pb<Infinity?pb:'∞'} <span style="font-size:.65rem;font-weight:400">meses</span></div><div class="ks">Desc: ${pbD<Infinity?pbD+'m':'∞'}</div></div>
+    <div class="kpi ${kc(dscr,1.2,1)}"><div class="kl">DSCR (operando)</div><div class="kv ${dscr>=1.2?'pos':dscr>=1?'mid':'neg'}">${fD(dscr,2)}x</div><div class="ks">Mín: ${fD(dscrMin,2)}x</div></div>
+    <div class="kpi ${kc(ibc,1.3,1)}"><div class="kl">Índice B/C</div><div class="kv ${ibc>=1?'pos':'neg'}">${fD(ibc,2)}</div></div>
+    <div class="kpi ${kc(r1n,0,-1)}"><div class="kl">Resultado base/mes</div><div class="kv ${r1n>=0?'pos':'neg'}">${fM(r1n)}</div><div class="ks">USD ${f0(Math.round(r1n/v.tc))}</div></div>
+    <div class="kpi"><div class="kl">Ganancia total</div><div class="kv ${gT>=0?'pos':'neg'}">${fM(gT)}</div><div class="ks">USD ${f0(Math.round(gT/v.tc))}</div></div>
+    <div class="kpi"><div class="kl">Meses s/operación</div><div class="kv mid">${OP_START}</div><div class="ks">Oct25—May26</div></div>
+  `;
+
+  let al='';
+  if(VAN>0&&tirA*100>v.tasa&&dscr>=1.2)al=`<div class="alert ag">Proyecto viable a ${N} meses: VAN ${fM(VAN)}, TIR ${fP(tirA*100)} > tasa ${v.tasa}%. Los primeros 8 meses sin operación generan flujo negativo puro, pero la operación a partir de Jun 2026 lo compensa.${v.inflacion>0?' La inflación del '+fD(v.inflacion,1)+'% mensual licúa las cuotas fijas y mejora el flujo real.':''}</div>`;
+  else if(VAN<=0)al=`<div class="alert ar">VAN negativo (${fM(VAN)}). Los 8 meses sin ingresos pesan. Probá alargar el horizonte o mejorar variables operativas.</div>`;
+  else if(dscr<1)al=`<div class="alert ar">DSCR ${fD(dscr,2)}x: el flujo operativo no cubre las cuotas cuando arranca la operación.</div>`;
+  else al=`<div class="alert aw">Proyecto marginal. VAN: ${fM(VAN)}. Revisá sensibilidad.</div>`;
+  document.getElementById('alert-main').innerHTML=al;
+
+  // EERR (base values, no inflation)
+  document.getElementById('tbl-eerr').innerHTML=`
+    <tr><td>Ingresos por flete</td><td class="pos">$${f0(ing0)}</td></tr>
+    <tr><td>(-) Gasoil</td><td>$${f0(cG0)}</td></tr>
+    <tr><td>(-) Cubiertas</td><td>$${f0(cC0)}</td></tr>
+    <tr><td>(-) Sueldo chofer</td><td>$${f0(v.sueldo)}</td></tr>
+    <tr><td>(-) Gastos varios</td><td>$${f0(v.gvarios)}</td></tr>
+    <tr class="tot"><td>EBITDA</td><td class="${r1>=0?'pos':'neg'}">$${f0(r1)}</td></tr>
+    ${v.impuesto>0?`<tr><td>(-) Impuestos (${v.impuesto}%)</td><td>$${f0(tx1)}</td></tr>`:''}
+    <tr class="tot"><td>Resultado op. base</td><td class="${r1n>=0?'pos':'neg'}">$${f0(r1n)}</td></tr>
+    <tr><td style="color:var(--text3)">Meses sin operación (Oct25-May26)</td><td style="color:var(--text3)">${OP_START}</td></tr>
+    <tr><td>(-) Mant. extra post-deuda (${v.mant}%)</td><td>$${f0(me0)}</td></tr>
+    ${v.impuesto>0?`<tr><td>(-) Impuestos fase 2</td><td>$${f0(tx2)}</td></tr>`:''}
+    <tr class="tot"><td>Resultado post-deuda base</td><td class="${r2n>=0?'pos':'neg'}">$${f0(r2n)}</td></tr>
+    <tr><td style="color:var(--amber)">Inflación mensual aplicada</td><td style="color:var(--amber)">${fD(v.inflacion,1)}%</td></tr>`;
+
+  document.getElementById('tbl-ratios').innerHTML=`
+    <tr><td>Horizonte</td><td>${N}m (${fD(N/12,1)} años)</td></tr>
+    <tr><td>Meses operativos</td><td>${mOp} de ${N}</td></tr>
+    <tr><td>Meses libres (post-deuda)</td><td>${mFree}</td></tr>
+    <tr><td>Margen operativo base</td><td>${fP(mar)}</td></tr>
+    <tr><td>Inversión total ARS</td><td>$${f0(TINV)}</td></tr>
+    <tr><td>Inversión total USD</td><td>USD ${f0(Math.round(TINV/v.tc))}</td></tr>
+    <tr><td>Valor residual</td><td>USD ${f0(v.residual)}</td></tr>
+    <tr><td>Km mensuales</td><td>${f0(km)}</td></tr>
+    <tr><td>Costo/km base</td><td>$${f0(Math.round(cb0/km))}</td></tr>
+    <tr><td>Ingreso/km base</td><td>$${f0(Math.round(ing0/km))}</td></tr>
+    <tr><td>Pto eq. con cuota</td><td>${f0(Math.round(peqL))} L</td></tr>
+    <tr><td>Pto eq. sin cuota</td><td>${f0(Math.round(peqLP))} L</td></tr>
+    <tr><td>Margen seguridad</td><td class="${mSeg>20?'pos':mSeg>0?'mid':'neg'}">${fP(mSeg)}</td></tr>
+    <tr><td>Cuota máxima</td><td>$${f0(cMax)}</td></tr>
+    <tr><td>Cuota promedio</td><td>$${f0(Math.round(cP))}</td></tr>`;
+
+  // Flujo
+  let ac=0,aD=0;
+  let fh='<tr><th>#</th><th>Mes</th><th>Fase</th><th>Ingreso</th><th>Costos op.</th><th>Cuota</th><th>Neto</th><th>Acum.</th><th>Acum.desc.</th></tr>';
+  fl.forEach((f,i)=>{
+    ac+=f;aD+=f/Math.pow(1+tm,i);
+    const d=details[i];
+    let phase,phc;
+    if(i<OP_START){phase='Pre-op';phc='ph-p'}
+    else if(i<DM){phase='Op+deuda';phc='ph-d'}
+    else{phase='Libre';phc='ph-f'}
+    const ex=i===N-1?' (+res.)':'';
+    const bd=i===OP_START?'border-top:2px solid var(--accent);':i===DM?'border-top:2px solid var(--green);':'';
+    fh+=`<tr style="${bd}"><td>${i+1}</td><td>${mos[i]}</td><td><span class="ph ${phc}">${phase}</span></td><td>$${f0(d.ingI)}</td><td>$${f0(d.costI)}</td><td>$${f0(d.cuota)}</td><td class="${f>=0?'pos':'neg'}">$${f0(Math.round(f))}${ex}</td><td class="${ac>=0?'pos':'neg'}">$${f0(Math.round(ac))}</td><td class="${aD>=0?'pos':'neg'}">$${f0(Math.round(aD))}</td></tr>`});
+  document.getElementById('tbl-flujo').innerHTML=fh;
+
+  // Charts
+  cCF.data.labels=mos;ac=0;cCF.data.datasets[0].data=fl.map(f=>{ac+=f;return Math.round(ac)});cCF.data.datasets[1].data=Array(N).fill(0);cCF.update();
+  cCo.data.datasets[0].data=[cG0,cC0,v.sueldo,v.gvarios,me0];cCo.data.labels=['Gasoil','Cubiertas','Sueldo','G.varios','Mant.extra'];cCo.update();
+  cBa.data.labels=mos;cBa.data.datasets[0].data=fl.map(f=>Math.round(f));
+  cBa.data.datasets[0].backgroundColor=fl.map((f,i)=>i<OP_START?'rgba(139,92,246,.5)':f>=0?'rgba(34,197,94,.5)':'rgba(239,68,68,.5)');cBa.update();
+
+  // Phase chart: 3 phases
+  const preOpM=OP_START,opDebtM=Math.max(0,Math.min(DM,N)-OP_START),freeM=mFree;
+  cPh.data.labels=['Pre-op ('+preOpM+'m)','Op+deuda ('+opDebtM+'m)','Libre ('+freeM+'m)'];
+  // Sum actual flows per phase
+  let ingP1=0,ingP2=0,ingP3=0,cP1=0,cP2=0,cP3=0,cuP1=0,cuP2=0;
+  details.forEach((d,i)=>{
+    if(i<OP_START){cuP1+=d.cuota}
+    else if(i<DM){ingP2+=d.ingI;cP2+=d.costI;cuP2+=d.cuota}
+    else{ingP3+=d.ingI;cP3+=d.costI}
+  });
+  cPh.data.datasets[0].data=[0,ingP2,ingP3];
+  cPh.data.datasets[1].data=[0,cP2,cP3];
+  cPh.data.datasets[2].data=[cuP1,cuP2,0];cPh.update();
+
+  let d2=0;cPB.data.labels=mos;cPB.data.datasets[0].data=fl.map((f,i)=>{d2+=f/Math.pow(1+tm,i);return Math.round(d2)});cPB.data.datasets[1].data=Array(N).fill(0);cPB.update();
+  let r3=0;cRO.data.labels=mos;cRO.data.datasets[0].data=fl.map(f=>{r3+=f;return Math.round(r3/TINV*100)});cRO.update();
+
+  // Sensibilidad
+  const sv=[{n:'Horizonte (meses)',k:'meses',b:v.meses},{n:'Litros/mes',k:'litros',b:v.litros},{n:'Precio venta/L',k:'pventa',b:v.pventa},{n:'Precio gasoil',k:'gasoil',b:v.gasoil},{n:'Viajes/mes',k:'viajes',b:v.viajes},{n:'Gastos varios',k:'gvarios',b:v.gvarios},{n:'Consumo L/km',k:'consumo',b:v.consumo},{n:'Sueldo chofer',k:'sueldo',b:v.sueldo},{n:'Mant. extra %',k:'mant',b:v.mant||1},{n:'Inflación mensual',k:'inflacion',b:v.inflacion||1}];
+  const sL=[],sD1=[],sC1=[],sD2=[],sC2=[];
+  sv.forEach(s=>{[-0.3,0.3].forEach((p,pi)=>{
+    const m={...v};m[s.k]=Math.max(s.k==='meses'?29:0,s.b*(1+p));if(s.k==='meses')m[s.k]=Math.round(m[s.k]);
+    const{fl:f2}=mkFlows(m,Math.round(m.meses));const t2=Math.pow(1+m.tasa/100,1/12)-1;const d=calcVAN(f2,t2)-VAN;
+    if(pi===0){sL.push(s.n);sD1.push(Math.round(d));sC1.push(d>=0?'#22c55e':'#ef4444')}
+    else{sD2.push(Math.round(d));sC2.push(d>=0?'#22c55e':'#ef4444')}
+  })});
+  cSe.data.labels=sL;cSe.data.datasets[0].data=sD1;cSe.data.datasets[0].backgroundColor=sC1;cSe.data.datasets[1].data=sD2;cSe.data.datasets[1].backgroundColor=sC2;cSe.update();
+
+  // Monte Carlo
+  const mcN=1000,mcV=[];
+  for(let s=0;s<mcN;s++){const rn=()=>(Math.random()-.5)*.4;const m={...v,litros:v.litros*(1+rn()),pventa:v.pventa*(1+rn()),gasoil:v.gasoil*(1+rn()),viajes:v.viajes*(1+rn()*.5),inflacion:Math.max(0,v.inflacion*(1+rn()*.6))};const{fl:f2}=mkFlows(m,N);mcV.push(calcVAN(f2,tm))}
+  mcV.sort((a,b)=>a-b);
+  const bins=24,mn=mcV[0],mx=mcV[mcN-1],rg=mx-mn||1,bw=rg/bins;
+  const mC=Array(bins).fill(0),mL2=[];mcV.forEach(v2=>{const b=Math.min(Math.floor((v2-mn)/bw),bins-1);mC[b]++});
+  for(let i=0;i<bins;i++)mL2.push(fM(mn+i*bw));
+  const mCo=Array.from({length:bins},(_,i)=>(mn+(i+.5)*bw)>=0?'rgba(34,197,94,.45)':'rgba(239,68,68,.45)');
+  const pN=Math.round(mcV.filter(v2=>v2<0).length/mcN*100);
+  const p5=mcV[Math.floor(mcN*.05)],p50=mcV[Math.floor(mcN*.5)],p95=mcV[Math.floor(mcN*.95)];
+  cMo.data.labels=mL2;cMo.data.datasets[0].data=mC;cMo.data.datasets[0].backgroundColor=mCo;cMo.update();
+  document.getElementById('mc-stats').innerHTML=`<div>Prob. VAN&lt;0: <strong class="${pN>30?'neg':pN>10?'mid':'pos'}">${pN}%</strong></div><div>P5: <strong class="${p5<0?'neg':'pos'}">${fM(p5)}</strong></div><div>Mediana: <strong class="${p50<0?'neg':'pos'}">${fM(p50)}</strong></div><div>P95: <strong class="pos">${fM(p95)}</strong></div>`;
+}
+
+IDS.forEach(id=>el[id].addEventListener('input',upd));
+upd();
+</script>
+</body>
+</html>
